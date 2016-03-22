@@ -70,15 +70,27 @@ function loadKey(keyfile, callback)
 	kbpgp.KeyManager.import_from_armored_pgp({ armored: keyfile }, function(err, alice) {
 		if (!err) {
 			console.log("Key loaded");
-			//console.log(util.inspect(alice, { depth: 1, colors:true	}));
-			//console.log("Userid: " + alice.pgp.userids[0].userid.toString());
 			
-			var material = alice.pgp.key(alice.pgp.primary);
-			console.log("Key fingerprint:\t" + material.get_fingerprint().toString('hex'));
-			console.log("Key ID: \t\t" + material.get_key_id().toString('hex'));
-			console.log("Short key ID: \t\t" + material.get_short_key_id().toString('hex'));
-			
-			callback(alice);
+			if (alice.is_pgp_locked()) {
+				console.log("Key is locked!");
+				
+				alice.unlock_pgp(
+					{
+						passphrase: "booyeah"
+					}, function(err) {
+						if (!err) {
+							//console.log(util.inspect(alice, { depth: 1, colors:true	}));
+							//console.log("Userid: " + alice.pgp.userids[0].userid.toString());
+							
+							var material = alice.pgp.key(alice.pgp.primary);
+							console.log("Key fingerprint:\t" + material.get_fingerprint().toString('hex'));
+							console.log("Key ID: \t\t" + material.get_key_id().toString('hex'));
+							console.log("Short key ID: \t\t" + material.get_short_key_id().toString('hex'));
+							
+							callback(alice);
+						}
+					});
+				}
 		}
 		else
 		{
